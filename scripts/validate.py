@@ -36,7 +36,16 @@ EXPECTED_CONTRACT = {
         "gh-change-delivery",
         "gh-delivery-reconciliation",
     ],
+    "work_projection_mapping_surfaces": [
+        "issue_type",
+        "labels",
+        "milestone",
+        "project_fields",
+    ],
+    "work_projection_mapping_owner": "consumer",
 }
+WORK_PROJECTION_RESOLVER = ROOT / "skills/gh-work-planning/scripts/resolve_work_projection.py"
+MAPPING_SURFACES_PATTERN = re.compile(r"^MAPPING_SURFACES = \{(.+)\}$", re.MULTILINE)
 TEST_PATTERNS = {
     "deliver-with-gh": ("test_delivery_router.py",),
     "gh-work-planning": ("test_work_projection_resolver.py",),
@@ -191,6 +200,33 @@ def validate_skill(skill_dir: Path, expected_name: str, diagnostics: list[Diagno
         load_json(fixture, diagnostics)
 
 
+def validate_mapping_surfaces(surfaces: Any, diagnostics: list[Diagnostic]) -> None:
+    """Keep the contract's surface list and the resolver's surface set identical.
+
+    The surfaces are consumer-owned mapping names only. Enumerating them does
+    not give the package a default label, milestone, Issue type, or field value.
+    """
+    if not isinstance(surfaces, list):
+        return
+    try:
+        source = WORK_PROJECTION_RESOLVER.read_text(encoding="utf-8")
+    except OSError as exc:
+        diagnostics.append(Diagnostic(str(WORK_PROJECTION_RESOLVER), f"cannot read resolver: {exc}"))
+        return
+    match = MAPPING_SURFACES_PATTERN.search(source)
+    if match is None:
+        diagnostics.append(Diagnostic(str(WORK_PROJECTION_RESOLVER), "missing MAPPING_SURFACES declaration"))
+        return
+    declared = sorted(entry.strip().strip("\"'") for entry in match.group(1).split(","))
+    if declared != sorted(surfaces):
+        diagnostics.append(
+            Diagnostic(
+                str(WORK_PROJECTION_RESOLVER),
+                f"MAPPING_SURFACES {declared} does not match contract {sorted(surfaces)}",
+            )
+        )
+
+
 def validate_contract(diagnostics: list[Diagnostic]) -> dict[str, Any]:
     contract = load_json(CONTRACT_PATH, diagnostics)
     if not isinstance(contract, dict):
@@ -200,6 +236,7 @@ def validate_contract(diagnostics: list[Diagnostic]) -> dict[str, Any]:
     for key, expected in EXPECTED_CONTRACT.items():
         if contract.get(key) != expected:
             diagnostics.append(Diagnostic(str(CONTRACT_PATH), f"architecture invariant mismatch for {key}"))
+    validate_mapping_surfaces(contract.get("work_projection_mapping_surfaces"), diagnostics)
     namespaces = contract.get("public_fixture_namespaces")
     if not isinstance(namespaces, list) or not namespaces or any(not isinstance(value, str) for value in namespaces):
         diagnostics.append(Diagnostic(str(CONTRACT_PATH), "public_fixture_namespaces must be non-empty strings"))

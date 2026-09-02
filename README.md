@@ -77,8 +77,11 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for agent-facing architecture and autho
   reconciliation of existing GitHub evidence before another change attempt.
 - `gh-work-planning` includes a work-projection resolver for cross-repository
   Projects, repository-explicit Issues, repository-free draft items, exact
-  canonical references, consumer-owned metadata mappings, and idempotent
-  create/update/no-op decisions.
+  canonical references, consumer-owned metadata mappings, native Issue types,
+  optional sub-issue parent references, and idempotent create/update/no-op
+  decisions. The consumer-owned mapping surfaces are `issue_type`, `labels`,
+  `milestone`, and `project_fields`; the package supplies no type name, label,
+  milestone, or field value of its own.
 - `gh-change-delivery` includes the repository branch-policy resolver described
   above and a composed change-delivery resolver for immutable repository scope,
   effect-specific authority, idempotent branch/commit/PR decisions, and factual
