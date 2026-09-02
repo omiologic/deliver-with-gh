@@ -258,12 +258,23 @@ deliver-with-gh/
 
 Future scripts, fixtures, tests, and adapters should remain package-local where possible and should not make consumer-specific layouts universal.
 
+`scripts/install.py` is a pinned installer with drift detection. It fetches a
+pinned ref from the configured remote, installs metadata-free package snapshots
+beneath `.agents/skills/` (Codex) or `.claude/skills/` (Claude Code), and writes
+`.deliver-with-gh-install.json` at that skill root recording the source commit
+and a per-package content digest. It never overwrites `behind`, locally
+modified, unmanaged, or source-changed packages without `--migrate`, and a
+commit-changing installation must include every previously installed package.
+The installer is copy-only; it does not create symlinks, patch `deliver-product`,
+or configure consumer branch policy, Project fields, labels, or repository paths.
+
 `package-contract.json` is the machine-readable validation projection of the
-ownership and dependency invariants in this document. It does not replace this
-architecture or create runtime state. `scripts/validate.py` checks that
-projection, all four independently discoverable skills, public-safe fixtures,
-and the scenario suite without requiring `deliver-product` to import or depend
-on this repository.
+ownership and dependency invariants in this document, including the
+`install_manifest` name. It does not replace this architecture or create
+runtime state. `scripts/validate.py` checks that projection, all four
+independently discoverable skills, public-safe fixtures, the installer, and the
+scenario suite without requiring `deliver-product` to import or depend on this
+repository.
 
 ## Initial non-goals
 

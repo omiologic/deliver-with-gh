@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = ROOT / "package-contract.json"
 EXPECTED_CONTRACT = {
     "package": "deliver-with-gh",
+    "install_manifest": ".deliver-with-gh-install.json",
     "dependency_direction": "deliver-with-gh -> deliver-product",
     "canonical_state_owner": "consumer runtime or responsible owner",
     "github_state_role": "projection_or_evidence",
