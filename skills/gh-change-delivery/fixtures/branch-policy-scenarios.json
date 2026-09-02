@@ -1,0 +1,133 @@
+[
+  {
+    "name": "valid-feature-policy",
+    "input": {
+      "repository": "example/widgets",
+      "repository_default_branch": "main",
+      "change": {
+        "work_item_id": "WX-00142",
+        "type": "feature",
+        "title": "Add organization delete"
+      },
+      "consumer_policy": {
+        "strategy": "feature",
+        "base_branch": "main",
+        "branch_pattern": "{type}/{work_item_id}-{slug}",
+        "allowed_types": ["feature", "fix", "chore"],
+        "requires_pull_request": true,
+        "protected_branches": ["main"],
+        "max_branch_length": 80
+      }
+    },
+    "expect": {
+      "status": "resolved",
+      "strategy": "feature",
+      "base_branch": "main",
+      "branch_name": "feature/WX-00142-add-organization-delete",
+      "requires_new_branch": true,
+      "requires_pull_request": true,
+      "pull_request_base": "main"
+    }
+  },
+  {
+    "name": "missing-strategy",
+    "input": {
+      "repository": "example/widgets",
+      "change": {"work_item_id": "WX-2", "type": "fix", "title": "Fix it"},
+      "consumer_policy": {"base_branch": "main"}
+    },
+    "expect": {"status": "blocked", "code": "missing_strategy", "owner": "consumer repository policy"}
+  },
+  {
+    "name": "conflicting-trunk-policy",
+    "input": {
+      "repository": "example/widgets",
+      "change": {"work_item_id": "WX-3", "title": "Docs"},
+      "consumer_policy": {
+        "strategy": "trunk",
+        "base_branch": "main",
+        "direct_work_allowed": true,
+        "requires_pull_request": true
+      }
+    },
+    "expect": {"status": "blocked", "code": "conflicting_policy"}
+  },
+  {
+    "name": "malformed-pattern",
+    "input": {
+      "repository": "example/widgets",
+      "change": {"work_item_id": "WX-4", "type": "feature", "title": "Search"},
+      "consumer_policy": {
+        "strategy": "feature",
+        "base_branch": "main",
+        "branch_pattern": "{type}/{ticket}-{slug}",
+        "allowed_types": ["feature"],
+        "requires_pull_request": true
+      }
+    },
+    "expect": {"status": "blocked", "code": "unknown_placeholder"}
+  },
+  {
+    "name": "protected-direct-target",
+    "input": {
+      "repository": "example/widgets",
+      "change": {"work_item_id": "WX-5", "title": "Docs"},
+      "consumer_policy": {
+        "strategy": "trunk",
+        "base_branch": "main",
+        "direct_work_allowed": true,
+        "requires_pull_request": false,
+        "protected_branches": ["main"]
+      }
+    },
+    "expect": {"status": "blocked", "code": "protected_target"}
+  },
+  {
+    "name": "cross-repository-project-policy-is-ignored",
+    "input": {
+      "repository": "example/widgets",
+      "repository_default_branch": "main",
+      "change": {"work_item_id": "WX-6", "type": "fix", "title": "Repair cache"},
+      "consumer_policy": {
+        "repository": "example/widgets",
+        "strategy": "feature",
+        "use_repository_default_as_base": true,
+        "branch_pattern": "{type}/{work_item_id}-{slug}",
+        "allowed_types": ["fix"],
+        "requires_pull_request": true
+      },
+      "project_context": {
+        "repository": "example/other-repository",
+        "branching": {"strategy": "trunk", "base_branch": "develop"}
+      }
+    },
+    "expect": {
+      "status": "resolved",
+      "strategy": "feature",
+      "repository": "example/widgets",
+      "base_branch": "main",
+      "branch_name": "fix/WX-6-repair-cache"
+    }
+  },
+  {
+    "name": "incomplete-custom-policy",
+    "input": {
+      "repository": "example/widgets",
+      "change": {"work_item_id": "WX-7", "title": "Special"},
+      "consumer_policy": {
+        "strategy": "custom",
+        "custom_contract": {"base_branch": "main"}
+      }
+    },
+    "expect": {"status": "blocked", "code": "incomplete_custom_semantics"}
+  },
+  {
+    "name": "repository-policy-conflict",
+    "input": {
+      "repository": "example/widgets",
+      "change": {"work_item_id": "WX-8", "title": "Conflict"},
+      "consumer_policy": {"repository": "example/other", "strategy": "trunk"}
+    },
+    "expect": {"status": "blocked", "code": "repository_conflict"}
+  }
+]

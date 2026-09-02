@@ -84,7 +84,26 @@ Preserve the canonical WorkItem identifier exactly when policy places it in the 
 
 ## Resolver output
 
-A future deterministic resolver should return either an exact contract such as:
+Run the dependency-free resolver with JSON on stdin or from a file:
+
+```shell
+python3 scripts/resolve_branch_policy.py input.json
+```
+
+The input object contains:
+
+- `repository`: exact `owner/repo`;
+- `repository_default_branch`: optional observation, used only when policy explicitly sets `use_repository_default_as_base` and the selected strategy permits fallback;
+- `change`: exact `work_item_id`, `type`, and `title` values needed by the selected pattern;
+- `consumer_policy`: either the branching object itself or a containing `branching` / `github_delivery.branching` object;
+- `operation_override`: optional fields explicitly named by policy in `allowed_operation_overrides`;
+- `project_context`: optional planning context that is deliberately ignored for branch resolution.
+
+Shared policy fields include `branch_pattern`, `allowed_types`, `protected_branches`, `max_branch_length`, and optional `branch_name_regex`. Patterns support only `{type}`, `{work_item_id}`, and `{slug}`, at most once each. Maximum-length handling truncates only the slug so an included canonical WorkItem identifier remains exact.
+
+`trunk` requires explicit `direct_work_allowed` and `requires_pull_request` values. `feature` always resolves a short-lived branch and requires `requires_pull_request`. `release` requires explicit `branch_roles`, `required_branch_roles`, `base_role`, `pull_request_target_role`, and work-branch behavior. `custom` requires a complete `custom_contract`; it has no fallback semantics.
+
+The resolver returns either an exact contract such as:
 
 ```json
 {
@@ -97,6 +116,12 @@ A future deterministic resolver should return either an exact contract such as:
   "requires_pull_request": true,
   "pull_request_base": "main"
 }
+```
+
+Blocked results include a stable `code`, human-readable `reason`, and responsible `owner`. The scenario fixtures at `../fixtures/branch-policy-scenarios.json` cover valid, missing, conflicting, malformed, protected-target, cross-repository, and incomplete custom policies. Run validation from the repository root with:
+
+```shell
+python3 -m unittest discover -s tests -v
 ```
 
 or a bounded blocker:

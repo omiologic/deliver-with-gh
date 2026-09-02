@@ -57,7 +57,7 @@ GitHub Project
 
 ## Consumer branching policy
 
-`gh-change-delivery` will support a small deterministic branching-strategy catalog. The consumer selects the strategy in its own policy or conventions; the skill resolves an exact branch contract rather than inventing workflow rules.
+`gh-change-delivery` includes a dependency-free deterministic branching-policy resolver. The consumer selects the strategy in its own policy or conventions; the skill resolves an exact branch contract rather than inventing workflow rules.
 
 Initial strategies:
 
@@ -72,4 +72,4 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for agent-facing architecture and autho
 
 ## Status
 
-This repository currently provides the initial contract scaffold. GitHub API behavior, deterministic policy resolvers, fixtures, package validation, installation tooling, and consumer integration are tracked as follow-up issues.
+This repository currently provides the initial contract scaffold and the `gh-change-delivery` branch-policy resolver with scenario fixtures. Additional GitHub API behavior, evidence normalization, package validation, installation tooling, and consumer integration are tracked as follow-up issues.

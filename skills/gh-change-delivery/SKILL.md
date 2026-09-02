@@ -26,6 +26,8 @@ Read [branching strategies](references/branching-strategies.md).
 
 Consumer repository policy owns the strategy selection. Resolve branch behavior deterministically; do not choose a preferred workflow from model judgment.
 
+Pass the exact repository, WorkItem/change inputs, repository-scoped consumer policy, and any permitted operation override to `scripts/resolve_branch_policy.py`. Treat a `blocked` result as an owner-attributed stop condition. Do not supplement missing semantics from a GitHub Project or model judgment.
+
 Branch policy resolution returns an exact branch contract or a blocker. It never authorizes branch creation, commit, push, PR creation, review, merge, tag, release, or repository-setting changes.
 
 ## Apply the repository workflow
