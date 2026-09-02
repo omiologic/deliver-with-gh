@@ -65,8 +65,13 @@ Typical responsibilities:
 - create or update a repository Issue projection for one bounded WorkItem when authorized;
 - preserve exact canonical Plan/WorkItem references when provided;
 - associate Issues from different repositories with one GitHub Project;
-- map consumer-owned priority, iteration, milestone, labels, or status fields without treating them as canonical runtime transitions;
+- map consumer-owned Issue type, priority, iteration, milestone, labels, or status fields without treating them as canonical runtime transitions;
+- project an organization-defined native Issue type and an optional sub-issue parent reference supplied by the bounded work owner;
 - represent cross-repository coordination without inventing repository ownership.
+
+The consumer-owned mapping surfaces are `issue_type`, `labels`, `milestone`, and `project_fields`. Each reads one exact key from an item's `planning_values`; the package supplies no type vocabulary, label, milestone, or field value, and never infers one from GitHub or Project state.
+
+A sub-issue `parent` is item-level bounded work input rather than a mapping. An Issue declares an exact same-repository Issue number or `owner/repo#number`; a draft declares `{"item_index": N}` pointing at an earlier item in the same batch. The resolver normalizes and forwards the reference without asking GitHub whether the parent exists, and hierarchy never rolls readiness, acceptance, or completion between parent and child.
 
 ### `gh-change-delivery`
 

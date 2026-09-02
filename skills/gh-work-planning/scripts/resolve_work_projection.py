@@ -22,7 +22,8 @@ AUTHORITY_NOTICE = (
     "GitHub Issue and Project state is a projection only; it does not establish "
     "canonical readiness, priority, assignment, acceptance, or completion."
 )
-MAPPING_SURFACES = {"labels", "milestone", "project_fields"}
+MAPPING_SURFACES = {"issue_type", "labels", "milestone", "project_fields"}
+PARENT_REF_PATTERN = re.compile(r"[^/\s]+/[^/\s]+#[1-9][0-9]*")
 
 
 class ProjectionBlock(Exception):
@@ -152,14 +153,7 @@ def map_scalar(raw: Any, config: dict[str, Any]) -> tuple[bool, Any]:
     return False, None
 
 
-def resolve_one_mapping(
-    planning_values: dict[str, Any],
-    surface: str,
-    target: str,
-    config: Any,
-    item_index: int,
-) -> tuple[bool, Any, str | None]:
-    mapping_name = f"{surface}.{target}" if surface == "project_fields" else surface
+def read_mapping_config(config: Any, mapping_name: str) -> tuple[str, bool]:
     if not isinstance(config, dict):
         block("malformed_mapping", f"{mapping_name} mapping must be an object", "consumer mapping owner")
     source = config.get("source")
@@ -170,6 +164,18 @@ def resolve_one_mapping(
             f"{mapping_name} requires a source string and optional boolean required flag",
             "consumer mapping owner",
         )
+    return source, required
+
+
+def resolve_one_mapping(
+    planning_values: dict[str, Any],
+    surface: str,
+    target: str,
+    config: Any,
+    item_index: int,
+) -> tuple[bool, Any, str | None]:
+    mapping_name = f"{surface}.{target}" if surface == "project_fields" else surface
+    source, required = read_mapping_config(config, mapping_name)
     if source not in planning_values:
         if required:
             block(
@@ -216,7 +222,7 @@ def resolve_one_mapping(
 
 
 def resolve_metadata(
-    planning_values: Any, mappings: dict[str, Any], item_index: int
+    planning_values: Any, mappings: dict[str, Any], kind: str, item_index: int
 ) -> tuple[dict[str, Any], list[str]]:
     if planning_values is None:
         planning_values = {}
@@ -242,6 +248,21 @@ def resolve_metadata(
                     omissions.append(omission)
             if fields:
                 metadata[surface] = fields
+        elif surface == "issue_type" and kind != "issue":
+            # A native Issue type belongs to an Issue. A draft item carries no
+            # Issue identity, so the surface is unavailable rather than invalid.
+            _, required = read_mapping_config(config, surface)
+            if required:
+                block(
+                    "mapping_unavailable",
+                    "required mapping issue_type is unavailable for a draft item",
+                    "consumer mapping owner",
+                    item_index,
+                    surface,
+                )
+            omissions.append(
+                "optional mapping issue_type omitted: a draft item carries no native Issue type"
+            )
         else:
             available, value, omission = resolve_one_mapping(
                 planning_values, surface, surface, config, item_index
@@ -251,6 +272,59 @@ def resolve_metadata(
             elif omission:
                 omissions.append(omission)
     return metadata, omissions
+
+
+def resolve_parent(item: dict[str, Any], kind: str, repository: str | None, item_index: int) -> Any:
+    """Normalize an optional sub-issue parent reference.
+
+    The resolver never asks GitHub whether the parent exists. It only forwards
+    an exact reference an authorized caller can use to create the sub-issue
+    link, or blocks on a reference it cannot normalize.
+    """
+    parent = item.get("parent")
+    if parent is None:
+        return None
+    if kind == "issue":
+        if not isinstance(parent, bool) and isinstance(parent, int):
+            if parent < 1:
+                block(
+                    "malformed_parent",
+                    "a same-repository parent Issue number must be a positive integer",
+                    "bounded work owner",
+                    item_index,
+                )
+            return f"{repository}#{parent}"
+        if isinstance(parent, str) and PARENT_REF_PATTERN.fullmatch(parent):
+            return parent
+        block(
+            "malformed_parent",
+            "an Issue parent must be a positive same-repository Issue number or an exact owner/repo#number",
+            "bounded work owner",
+            item_index,
+        )
+    if not isinstance(parent, dict) or set(parent) != {"item_index"}:
+        block(
+            "malformed_parent",
+            "a draft parent must be an object containing only item_index",
+            "bounded work owner",
+            item_index,
+        )
+    index = parent["item_index"]
+    if isinstance(index, bool) or not isinstance(index, int) or index < 0:
+        block(
+            "malformed_parent",
+            "parent.item_index must be a non-negative integer",
+            "bounded work owner",
+            item_index,
+        )
+    if index >= item_index:
+        block(
+            "parent_out_of_range",
+            f"parent.item_index {index} must reference an earlier item in the same batch",
+            "bounded work owner",
+            item_index,
+        )
+    return {"item_index": index}
 
 
 def resolve_item(item: Any, mappings: dict[str, Any], item_index: int) -> tuple[dict[str, Any], list[str]]:
@@ -272,7 +346,7 @@ def resolve_item(item: Any, mappings: dict[str, Any], item_index: int) -> tuple[
                 item_index=item_index,
             )
     canonical_refs = copy.deepcopy(canonical_refs)
-    metadata, omissions = resolve_metadata(item.get("planning_values"), mappings, item_index)
+    metadata, omissions = resolve_metadata(item.get("planning_values"), mappings, kind, item_index)
 
     projected: dict[str, Any] = {
         "kind": kind,
@@ -297,6 +371,9 @@ def resolve_item(item: Any, mappings: dict[str, Any], item_index: int) -> tuple[
                 "bounded work owner",
                 item_index,
             )
+    parent = resolve_parent(item, kind, projected.get("repository"), item_index)
+    if parent is not None:
+        projected["parent"] = parent
     item_id = item.get("project_item_id")
     if item_id is not None:
         projected["project_item_id"] = exact_string(item_id, "project_item_id", item_index)

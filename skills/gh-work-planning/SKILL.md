@@ -28,14 +28,21 @@ When authorized, create or update the smallest useful GitHub projection:
 - repository Issue for one bounded WorkItem;
 - Project item for coordination, prioritization, iteration, or portfolio visibility;
 - association of Issues from multiple repositories with one Project;
-- consumer-defined labels, milestones, fields, or iteration values.
+- consumer-defined Issue types, labels, milestones, fields, or iteration values;
+- a sub-issue parent link when the bounded work owner supplied an exact parent
+  reference.
 
 Keep outcome, scope, acceptance criteria, dependencies, and canonical references attributable. Do not copy unrelated planning context into every Issue.
 
 Mappings are consumer-owned and optional. Never supply package defaults for
-labels, milestones, Project fields, iterations, priorities, or statuses. If a
-consumer marks a mapping required and its source or mapped value is unavailable,
-return the resolver's bounded blocker instead of guessing.
+Issue types, labels, milestones, Project fields, iterations, priorities, or
+statuses. If a consumer marks a mapping required and its source or mapped value
+is unavailable, return the resolver's bounded blocker instead of guessing.
+
+Native Issue types and sub-issue parent links are projection structure. Do not
+read an organization's configured types, infer a type from a title or label, or
+infer hierarchy from existing GitHub state. A parent link never propagates
+readiness, acceptance, or completion between parent and child.
 
 ## Preserve ownership
 

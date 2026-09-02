@@ -104,4 +104,278 @@
     },
     "expect": {"status": "resolved", "action": "create", "item_count": 1, "omission_count": 1}
   }
+,
+  {
+    "name": "issue-type-mapped-through-consumer-values",
+    "input": {
+      "project_ref": "example-org/project/17",
+      "consumer_policy": {
+        "mappings": {
+          "issue_type": {
+            "source": "work_type",
+            "required": true,
+            "values": {"initiative": "Epic", "story": "Feature", "chore": "Task"}
+          }
+        }
+      },
+      "work_items": [
+        {
+          "kind": "issue",
+          "repository": "example-org/api",
+          "title": "Deliver the account launch",
+          "canonical_refs": {"work_item": "WI-API-1"},
+          "planning_values": {"work_type": "initiative"}
+        },
+        {
+          "kind": "issue",
+          "repository": "example-org/web",
+          "title": "Render account page",
+          "canonical_refs": {"work_item": "WI-WEB-2"},
+          "planning_values": {"work_type": "story"}
+        }
+      ]
+    },
+    "expect": {"status": "resolved", "action": "create", "item_count": 2, "omission_count": 0}
+  },
+  {
+    "name": "issue-type-copied-without-values",
+    "input": {
+      "project_ref": "example-org/project/17",
+      "consumer_policy": {"mappings": {"issue_type": {"source": "work_type"}}},
+      "work_items": [
+        {
+          "kind": "issue",
+          "repository": "partner-org/docs",
+          "title": "Document account retrieval",
+          "canonical_refs": {"work_item": "WI-DOCS-8"},
+          "planning_values": {"work_type": "Task"}
+        }
+      ]
+    },
+    "expect": {"status": "resolved", "action": "create", "item_count": 1, "omission_count": 0}
+  },
+  {
+    "name": "optional-issue-type-unavailable-is-omitted",
+    "input": {
+      "project_ref": "example-org/project/17",
+      "consumer_policy": {
+        "mappings": {"issue_type": {"source": "work_type", "values": {"story": "Feature"}}}
+      },
+      "work_items": [
+        {
+          "kind": "issue",
+          "repository": "example-org/api",
+          "title": "Expose account endpoint",
+          "planning_values": {"priority": "high"}
+        }
+      ]
+    },
+    "expect": {"status": "resolved", "action": "create", "item_count": 1, "omission_count": 1}
+  },
+  {
+    "name": "optional-issue-type-omitted-for-draft-item",
+    "input": {
+      "project_ref": "example-org/project/17",
+      "consumer_policy": {
+        "mappings": {"issue_type": {"source": "work_type", "values": {"initiative": "Epic"}}}
+      },
+      "work_items": [
+        {
+          "kind": "draft",
+          "title": "Coordinate launch communication",
+          "planning_values": {"work_type": "initiative"}
+        }
+      ]
+    },
+    "expect": {"status": "resolved", "action": "create", "item_count": 1, "omission_count": 1}
+  },
+  {
+    "name": "required-issue-type-unavailable-blocks",
+    "input": {
+      "project_ref": "example-org/project/17",
+      "consumer_policy": {
+        "mappings": {
+          "issue_type": {"source": "work_type", "required": true, "values": {"story": "Feature"}}
+        }
+      },
+      "work_items": [
+        {
+          "kind": "issue",
+          "repository": "example-org/api",
+          "title": "Untyped bounded work",
+          "planning_values": {"priority": "high"}
+        }
+      ]
+    },
+    "expect": {"status": "blocked", "code": "mapping_unavailable", "item_index": 0, "mapping": "issue_type"}
+  },
+  {
+    "name": "required-issue-type-blocks-for-draft-item",
+    "input": {
+      "project_ref": "example-org/project/17",
+      "consumer_policy": {
+        "mappings": {
+          "issue_type": {"source": "work_type", "required": true, "values": {"initiative": "Epic"}}
+        }
+      },
+      "work_items": [
+        {
+          "kind": "draft",
+          "title": "Coordinate launch communication",
+          "planning_values": {"work_type": "initiative"}
+        }
+      ]
+    },
+    "expect": {"status": "blocked", "code": "mapping_unavailable", "item_index": 0, "mapping": "issue_type"}
+  },
+  {
+    "name": "parent-by-same-repository-issue-number",
+    "input": {
+      "project_ref": "example-org/project/17",
+      "work_items": [
+        {
+          "kind": "issue",
+          "repository": "example-org/api",
+          "issue_number": 12,
+          "title": "Expose account endpoint",
+          "canonical_refs": {"work_item": "WI-API-12"},
+          "parent": 4
+        }
+      ]
+    },
+    "expect": {"status": "resolved", "action": "create", "item_count": 1, "omission_count": 0}
+  },
+  {
+    "name": "parent-by-cross-repository-reference",
+    "input": {
+      "project_ref": "example-org/project/17",
+      "work_items": [
+        {
+          "kind": "issue",
+          "repository": "partner-org/docs",
+          "issue_number": 8,
+          "title": "Document account retrieval",
+          "canonical_refs": {"work_item": "WI-DOCS-8"},
+          "parent": "example-org/api#4"
+        }
+      ]
+    },
+    "expect": {"status": "resolved", "action": "create", "item_count": 1, "omission_count": 0}
+  },
+  {
+    "name": "draft-parent-by-batch-item-index",
+    "input": {
+      "project_ref": "example-org/project/17",
+      "work_items": [
+        {
+          "kind": "issue",
+          "repository": "example-org/api",
+          "issue_number": 4,
+          "title": "Deliver the account launch",
+          "canonical_refs": {"work_item": "WI-API-4"}
+        },
+        {
+          "kind": "draft",
+          "title": "Coordinate launch communication",
+          "canonical_refs": {"work_item": "WI-COMMS-TBD"},
+          "parent": {"item_index": 0}
+        }
+      ]
+    },
+    "expect": {"status": "resolved", "action": "create", "item_count": 2, "omission_count": 0}
+  },
+  {
+    "name": "draft-parent-item-index-out-of-range-blocks",
+    "input": {
+      "project_ref": "example-org/project/17",
+      "work_items": [
+        {
+          "kind": "draft",
+          "title": "Coordinate launch communication",
+          "parent": {"item_index": 2}
+        }
+      ]
+    },
+    "expect": {"status": "blocked", "code": "parent_out_of_range", "item_index": 0}
+  },
+  {
+    "name": "issue-type-and-parent-projection-is-idempotent",
+    "input": {
+      "project_ref": "example-org/project/17",
+      "consumer_policy": {
+        "mappings": {"issue_type": {"source": "work_type", "values": {"story": "Feature"}}}
+      },
+      "work_items": [
+        {
+          "kind": "issue",
+          "repository": "example-org/api",
+          "issue_number": 12,
+          "title": "Expose account endpoint",
+          "canonical_refs": {"work_item": "WI-API-12"},
+          "parent": 4,
+          "planning_values": {"work_type": "story"}
+        }
+      ],
+      "existing_projection": {
+        "items": [
+          {
+            "body": "## Traceability\n\n- work_item: WI-API-12",
+            "canonical_refs": {
+              "work_item": "WI-API-12"
+            },
+            "github_metadata": {
+              "issue_type": "Feature"
+            },
+            "issue_ref": "example-org/api#12",
+            "kind": "issue",
+            "parent": "example-org/api#4",
+            "repository": "example-org/api",
+            "title": "Expose account endpoint"
+          }
+        ],
+        "project_ref": "example-org/project/17"
+      }
+    },
+    "expect": {"status": "resolved", "action": "none", "item_count": 1}
+  },
+  {
+    "name": "changed-parent-requests-update",
+    "input": {
+      "project_ref": "example-org/project/17",
+      "consumer_policy": {
+        "mappings": {"issue_type": {"source": "work_type", "values": {"story": "Feature"}}}
+      },
+      "work_items": [
+        {
+          "kind": "issue",
+          "repository": "example-org/api",
+          "issue_number": 12,
+          "title": "Expose account endpoint",
+          "canonical_refs": {"work_item": "WI-API-12"},
+          "parent": 5,
+          "planning_values": {"work_type": "story"}
+        }
+      ],
+      "existing_projection": {
+        "items": [
+          {
+            "body": "## Traceability\n\n- work_item: WI-API-12",
+            "canonical_refs": {
+              "work_item": "WI-API-12"
+            },
+            "github_metadata": {
+              "issue_type": "Feature"
+            },
+            "issue_ref": "example-org/api#12",
+            "kind": "issue",
+            "parent": "example-org/api#4",
+            "repository": "example-org/api",
+            "title": "Expose account endpoint"
+          }
+        ],
+        "project_ref": "example-org/project/17"
+      }
+    },
+    "expect": {"status": "resolved", "action": "update", "item_count": 1}
+  }
 ]
