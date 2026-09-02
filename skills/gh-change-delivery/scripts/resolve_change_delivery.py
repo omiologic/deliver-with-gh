@@ -24,6 +24,14 @@ branch_policy = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
 SPEC.loader.exec_module(branch_policy)
 
+GOVERNANCE_ADAPTER_PATH = Path(__file__).with_name("resolve_governed_branch_policy.py")
+GOVERNANCE_SPEC = importlib.util.spec_from_file_location(
+    "change_delivery_governance_adapter", GOVERNANCE_ADAPTER_PATH
+)
+governance_adapter = importlib.util.module_from_spec(GOVERNANCE_SPEC)
+assert GOVERNANCE_SPEC.loader is not None
+GOVERNANCE_SPEC.loader.exec_module(governance_adapter)
+
 
 SUPPORTED_EFFECTS = {
     "branch_create",
@@ -395,11 +403,23 @@ def resolve(payload: Any) -> dict[str, Any]:
         requested = validate_requested_effects(payload)
         authority = validate_authority(payload)
 
+        governed_policy = governance_adapter.resolve(
+            {
+                "repository": repository,
+                "direct_consumer_policy": payload.get("consumer_policy"),
+                "context_governance": payload.get("context_governance"),
+            }
+        )
+        if governed_policy["status"] == "blocked":
+            result = dict(governed_policy)
+            result["blocker_source"] = "context_governance"
+            return result
+
         branch_input = {
             "repository": repository,
             "repository_default_branch": payload.get("repository_default_branch"),
             "change": change,
-            "consumer_policy": payload.get("consumer_policy"),
+            "consumer_policy": governed_policy["consumer_policy"],
             "operation_override": payload.get("operation_override"),
         }
         branch_result = branch_policy.resolve(branch_input)
@@ -438,7 +458,7 @@ def resolve(payload: Any) -> dict[str, Any]:
 
         pull_request = observations.get("pull_request")
         phase = "merged_evidence" if pull_request and pull_request.get("merged") else "pr_handoff" if pull_request else "change_execution"
-        return {
+        result = {
             "status": "resolved",
             "phase": phase,
             "repository": repository,
@@ -450,6 +470,10 @@ def resolve(payload: Any) -> dict[str, Any]:
             "handoff": build_handoff(repository, work_item_ref, branch_result, observations, criteria, blockers),
             "authority": AUTHORITY_NOTICE,
         }
+        if governed_policy["source"] == "context_governance":
+            result["policy_source"] = "context_governance"
+            result["governance_provenance"] = governed_policy["governance_provenance"]
+        return result
     except DeliveryBlock as exc:
         result: dict[str, Any] = {
             "status": "blocked",

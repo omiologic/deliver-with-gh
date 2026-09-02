@@ -82,3 +82,9 @@ projections or evidence, not canonical state.
 Branch strategy and repository policy remain consumer inputs. The complete
 ecosystem provides deterministic resolution but no default branch strategy,
 repository path, label, Project field, iteration, priority, or status mapping.
+
+Context Governance is an optional policy source for `gh-change-delivery`, not
+an installation dependency. When both are installed, resolve the applicable
+bounded governance context first and pass that compact result to the change
+workflow. Installing `gh-change-delivery` by itself preserves direct
+`consumer_policy` behavior unchanged.

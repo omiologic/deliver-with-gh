@@ -82,13 +82,16 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for agent-facing architecture and autho
 - `gh-change-delivery` includes the repository branch-policy resolver described
   above and a composed change-delivery resolver for immutable repository scope,
   effect-specific authority, idempotent branch/commit/PR decisions, and factual
-  review/check/workflow/merge handoff evidence.
+  review/check/workflow/merge handoff evidence. An optional adapter consumes
+  bounded Context Governance Convention/Constraint results into the same
+  `github_delivery.branching` contract without making Context Governance a hard
+  dependency.
 - `gh-delivery-reconciliation` includes a criterion-level evidence normalizer
   that bounds GitHub claims to declared coverage, detects failed/missing/stale
   verification, and preserves repository and cross-repository Project
   provenance separately.
 
-Both helpers are read-only contract resolvers. They do not grant or exercise
+These helpers are read-only contract resolvers. They do not grant or exercise
 GitHub mutation authority and do not decide canonical Delivery state.
 
 ## Validate and install

@@ -22,6 +22,7 @@ EXPECTED_CONTRACT = {
     "github_state_role": "projection_or_evidence",
     "project_repository_identity": "independent",
     "branch_policy_owner": "consumer",
+    "optional_policy_sources": ["context-governance resolved_context"],
     "router": "deliver-with-gh",
     "router_children": [
         "gh-work-planning",
@@ -38,7 +39,11 @@ EXPECTED_CONTRACT = {
 TEST_PATTERNS = {
     "deliver-with-gh": ("test_delivery_router.py",),
     "gh-work-planning": ("test_work_projection_resolver.py",),
-    "gh-change-delivery": ("test_branch_policy_resolver.py", "test_change_delivery_resolver.py"),
+    "gh-change-delivery": (
+        "test_branch_policy_resolver.py",
+        "test_change_delivery_resolver.py",
+        "test_governed_branch_policy.py",
+    ),
     "gh-delivery-reconciliation": ("test_github_evidence_normalizer.py",),
 }
 LINK_PATTERN = re.compile(r"\[[^\]]+\]\(([^)]+)\)")

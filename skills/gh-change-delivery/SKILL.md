@@ -26,6 +26,13 @@ Read [branching strategies](references/branching-strategies.md).
 
 Consumer repository policy owns the strategy selection. Resolve branch behavior deterministically; do not choose a preferred workflow from model judgment.
 
+When Context Governance is installed and applicable governed records may own
+this policy, read
+[Context Governance policy source](references/context-governance-policy.md).
+Use its optional adapter before branch resolution. Context Governance is not a
+required dependency, and direct consumer-policy behavior must remain unchanged
+when it is absent or has no applicable branching record.
+
 Pass the exact repository, WorkItem/change inputs, repository-scoped consumer policy, and any permitted operation override to `scripts/resolve_branch_policy.py`. Treat a `blocked` result as an owner-attributed stop condition. Do not supplement missing semantics from a GitHub Project or model judgment.
 
 Branch policy resolution returns an exact branch contract or a blocker. It never authorizes branch creation, commit, push, PR creation, review, merge, tag, release, or repository-setting changes.

@@ -84,6 +84,12 @@ Preserve the canonical WorkItem identifier exactly when policy places it in the 
 
 ## Resolver output
 
+When applicable branch policy comes from optional governed Convention and
+Constraint records, first read
+[Context Governance policy source](context-governance-policy.md). That adapter
+produces this same consumer-owned target contract; it does not change any
+resolution rule below.
+
 Run the dependency-free resolver with JSON on stdin or from a file:
 
 ```shell

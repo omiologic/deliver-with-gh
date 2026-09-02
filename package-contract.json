@@ -6,6 +6,9 @@
   "github_state_role": "projection_or_evidence",
   "project_repository_identity": "independent",
   "branch_policy_owner": "consumer",
+  "optional_policy_sources": [
+    "context-governance resolved_context"
+  ],
   "router": "deliver-with-gh",
   "router_children": [
     "gh-work-planning",

@@ -1,0 +1,121 @@
+[
+  {
+    "name": "context-governance-valid-applicable-records",
+    "input": {
+      "repository": "example/widgets",
+      "direct_consumer_policy": null,
+      "context_governance": {
+        "installed": true,
+        "resolved_context": {
+          "target": "src/widgets",
+          "decisions": [],
+          "conventions": [
+            {
+              "convention_id": "convention-github-feature-branches",
+              "scope": "workspace",
+              "strength": "default",
+              "statement": "github_delivery.branching = {\"strategy\":\"feature\",\"base_branch\":\"main\",\"branch_pattern\":\"{type}/{work_item_id}-{slug}\",\"allowed_types\":[\"feature\",\"fix\"]}",
+              "record": "conventions/github-feature-branches.md"
+            }
+          ],
+          "constraints": [
+            {
+              "constraint_id": "constraint-github-protected-main",
+              "scope": "workspace",
+              "source": ".github/rules/main",
+              "statement": "github_delivery.branching = {\"protected_branches\":[\"main\"],\"requires_pull_request\":true}",
+              "check": "satisfied",
+              "record": "constraints/github-protected-main.md"
+            }
+          ],
+          "unstructured_sources": ["AGENTS.md"],
+          "blockers": []
+        }
+      }
+    },
+    "expect": {"status": "resolved", "source": "context_governance"}
+  },
+  {
+    "name": "context-governance-installed-no-applicable-records",
+    "input": {
+      "repository": "example/widgets",
+      "direct_consumer_policy": {
+        "strategy": "feature",
+        "base_branch": "main",
+        "branch_pattern": "{type}/{work_item_id}-{slug}",
+        "allowed_types": ["feature"],
+        "requires_pull_request": true
+      },
+      "context_governance": {
+        "installed": true,
+        "resolved_context": {
+          "target": "src/widgets",
+          "decisions": [],
+          "conventions": [],
+          "constraints": [],
+          "unstructured_sources": [],
+          "blockers": []
+        }
+      }
+    },
+    "expect": {"status": "resolved", "source": "direct_no_applicable_governance"}
+  },
+  {
+    "name": "context-governance-absent",
+    "input": {
+      "repository": "example/widgets",
+      "direct_consumer_policy": {
+        "strategy": "feature",
+        "base_branch": "main",
+        "branch_pattern": "{type}/{work_item_id}-{slug}",
+        "allowed_types": ["feature"],
+        "requires_pull_request": true
+      }
+    },
+    "expect": {"status": "resolved", "source": "direct"}
+  },
+  {
+    "name": "context-governance-violated-constraint",
+    "input": {
+      "repository": "example/widgets",
+      "direct_consumer_policy": {
+        "strategy": "feature",
+        "base_branch": "main",
+        "branch_pattern": "{type}/{work_item_id}-{slug}",
+        "allowed_types": ["feature"],
+        "requires_pull_request": true
+      },
+      "context_governance": {
+        "installed": true,
+        "resolved_context": {
+          "target": "src/widgets",
+          "decisions": [],
+          "conventions": [],
+          "constraints": [
+            {
+              "constraint_id": "constraint-review-required",
+              "scope": "workspace",
+              "source": ".github/rules/main",
+              "statement": "github_delivery.branching = {\"requires_pull_request\":true}",
+              "check": "violated",
+              "record": "constraints/review-required.md"
+            }
+          ],
+          "unstructured_sources": [],
+          "blockers": [
+            {
+              "kind": "constraint_violated",
+              "reference": "constraint-review-required",
+              "reason": "violated Constraints invalidate the candidate"
+            }
+          ]
+        }
+      }
+    },
+    "expect": {
+      "status": "blocked",
+      "code": "governance_constraint_violated",
+      "owner": ".github/rules/main"
+    }
+  }
+]

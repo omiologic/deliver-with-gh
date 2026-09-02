@@ -91,6 +91,26 @@ The skill may use GitHub operations only under explicit authority. It does not i
 
 Branch policy is repository-scoped even when the surrounding GitHub Project spans several repositories.
 
+Context Governance may optionally supply already-resolved applicable Convention
+and Constraint records as a branch-policy source:
+
+```text
+Context Governance resolved_context (optional)
+                  │
+                  ▼
+exact github_delivery.branching adapter
+                  │
+                  ▼
+existing branch-policy resolver
+```
+
+The adapter consumes the bounded handoff but does not import, discover, or
+require Context Governance. It produces the existing consumer-owned policy
+contract and does not alter branch resolution precedence or semantics. Direct
+consumer policy remains unchanged when the optional integration is absent or
+has no applicable declaration. Unknown or violated applicable Constraints stay
+owner-attributed blockers.
+
 ### `gh-delivery-reconciliation`
 
 Owns GitHub evidence normalization.

@@ -19,6 +19,29 @@ from typing import Any
 
 SUPPORTED_STRATEGIES = {"trunk", "feature", "release", "custom"}
 SUPPORTED_PLACEHOLDERS = {"type", "work_item_id", "slug"}
+SUPPORTED_POLICY_FIELDS = {
+    "allowed_operation_overrides",
+    "allowed_types",
+    "base_branch",
+    "base_role",
+    "branch_name_regex",
+    "branch_pattern",
+    "branch_roles",
+    "change_type",
+    "custom_contract",
+    "direct_work_allowed",
+    "max_branch_length",
+    "protected_branches",
+    "pull_request_base",
+    "pull_request_target_role",
+    "repository",
+    "required_branch_roles",
+    "requires_new_branch",
+    "requires_pull_request",
+    "strategy",
+    "use_repository_default_as_base",
+    "work_role",
+}
 OVERRIDABLE_FIELDS = {
     "base_branch",
     "branch_pattern",
