@@ -70,6 +70,14 @@ Branch policy is repository-scoped even when the surrounding GitHub Project span
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for agent-facing architecture and authority boundaries.
 
-## Status
+## Deterministic helpers
 
-This repository currently provides the initial contract scaffold and the `gh-change-delivery` branch-policy resolver with scenario fixtures. Additional GitHub API behavior, evidence normalization, package validation, installation tooling, and consumer integration are tracked as follow-up issues.
+- `gh-work-planning` includes a work-projection resolver for cross-repository
+  Projects, repository-explicit Issues, repository-free draft items, exact
+  canonical references, consumer-owned metadata mappings, and idempotent
+  create/update/no-op decisions.
+- `gh-change-delivery` includes the repository branch-policy resolver described
+  above.
+
+Both helpers are read-only contract resolvers. They do not grant or exercise
+GitHub mutation authority and do not decide canonical Delivery state.

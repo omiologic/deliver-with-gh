@@ -1,0 +1,107 @@
+[
+  {
+    "name": "three-repository-project-with-draft",
+    "input": {
+      "project_ref": {"owner": "example-org", "number": 17, "node_id": "PVT_example17"},
+      "consumer_policy": {
+        "mappings": {
+          "labels": {
+            "source": "categories",
+            "values": {"api": "area:api", "docs": "area:docs", "web": "area:web"}
+          },
+          "project_fields": {
+            "Iteration": {"source": "iteration"},
+            "Priority": {
+              "source": "priority",
+              "required": true,
+              "values": {"high": "High", "medium": "Medium"}
+            },
+            "Status": {
+              "source": "planning_status",
+              "values": {"queued": "Todo", "active": "In progress"}
+            }
+          }
+        }
+      },
+      "work_items": [
+        {
+          "kind": "issue",
+          "repository": "example-org/api",
+          "issue_number": 12,
+          "title": "Expose account endpoint",
+          "content": {
+            "outcome": "Clients can retrieve an account.",
+            "scope": "Add the authenticated read endpoint.",
+            "acceptance_criteria": ["A valid account is returned."],
+            "dependencies": ["schema:account-v2"]
+          },
+          "canonical_refs": {"plan": "plans/account-launch", "work_item": "WI-API-12"},
+          "planning_values": {
+            "categories": ["api"], "iteration": "2026-W36", "priority": "high", "planning_status": "active"
+          }
+        },
+        {
+          "kind": "issue",
+          "repository": "example-org/web",
+          "issue_number": 44,
+          "title": "Render account page",
+          "canonical_refs": {"plan": "plans/account-launch", "work_item": "WI-WEB-44"},
+          "planning_values": {
+            "categories": ["web"], "iteration": "2026-W36", "priority": "high", "planning_status": "queued"
+          }
+        },
+        {
+          "kind": "issue",
+          "repository": "partner-org/docs",
+          "issue_number": 8,
+          "title": "Document account retrieval",
+          "canonical_refs": {"plan": "plans/account-launch", "work_item": "WI-DOCS-8"},
+          "planning_values": {
+            "categories": ["docs"], "iteration": "2026-W37", "priority": "medium", "planning_status": "queued"
+          }
+        },
+        {
+          "kind": "draft",
+          "title": "Coordinate launch communication",
+          "canonical_refs": {"plan": "plans/account-launch", "work_item": "WI-COMMS-TBD"},
+          "planning_values": {"iteration": "2026-W37", "priority": "medium", "planning_status": "queued"}
+        }
+      ]
+    },
+    "expect": {"status": "resolved", "action": "create", "item_count": 4}
+  },
+  {
+    "name": "required-priority-is-unavailable",
+    "input": {
+      "project_ref": "example-org/project/17",
+      "consumer_policy": {
+        "mappings": {
+          "project_fields": {
+            "Priority": {"source": "priority", "required": true, "values": {"high": "High"}}
+          }
+        }
+      },
+      "work_items": [{"kind": "draft", "title": "Unprioritized coordination"}]
+    },
+    "expect": {"status": "blocked", "code": "mapping_unavailable", "item_index": 0, "mapping": "project_fields.Priority"}
+  },
+  {
+    "name": "issue-without-repository-blocks",
+    "input": {
+      "project_ref": {"owner": "example-org", "number": 17},
+      "work_items": [{"kind": "issue", "title": "Repository cannot be inferred"}]
+    },
+    "expect": {"status": "blocked", "code": "missing_repository", "item_index": 0}
+  },
+  {
+    "name": "optional-unavailable-mapping-is-omitted",
+    "input": {
+      "project_ref": "example-org/project/17",
+      "consumer_policy": {
+        "mappings": {"milestone": {"source": "release", "values": {"next": "Next release"}}}
+      },
+      "work_items": [{"kind": "draft", "title": "Coordination", "canonical_refs": {"work_item": "WI-9"}}]
+    },
+    "expect": {"status": "resolved", "action": "create", "item_count": 1, "omission_count": 1}
+  }
+]

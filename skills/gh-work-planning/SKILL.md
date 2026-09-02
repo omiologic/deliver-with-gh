@@ -7,6 +7,14 @@ description: Project bounded delivery work into GitHub Issues and GitHub Project
 
 Represent bounded delivery work in GitHub without turning GitHub planning state into canonical Delivery state.
 
+## Load the projection contract
+
+For Issue, draft-item, Project metadata, field-mapping, or idempotence work,
+read [references/work-projection-contract.md](references/work-projection-contract.md).
+Use `scripts/resolve_work_projection.py` to produce a deterministic desired
+projection and bounded mapping blockers before performing any authorized GitHub
+operation.
+
 ## Require explicit scope
 
 Use the bounded planning output supplied by the platform-neutral Delivery layer or responsible owner. Preserve exact Plan and WorkItem references when available.
@@ -23,6 +31,11 @@ When authorized, create or update the smallest useful GitHub projection:
 - consumer-defined labels, milestones, fields, or iteration values.
 
 Keep outcome, scope, acceptance criteria, dependencies, and canonical references attributable. Do not copy unrelated planning context into every Issue.
+
+Mappings are consumer-owned and optional. Never supply package defaults for
+labels, milestones, Project fields, iterations, priorities, or statuses. If a
+consumer marks a mapping required and its source or mapped value is unavailable,
+return the resolver's bounded blocker instead of guessing.
 
 ## Preserve ownership
 
