@@ -97,7 +97,21 @@ GitHub mutation authority and do not decide canonical Delivery state.
 ## Validate and install
 
 Run `python3 scripts/validate.py` to validate all four packages, architecture
-invariants, public fixtures, and scenarios. See
-[INSTALLATION.md](./INSTALLATION.md) for independent/full installation,
-installed-skill validation, and the one-way `deliver-product` integration
-contract.
+invariants, public fixtures, the installer, and scenarios.
+
+`scripts/install.py` is a pinned installer with drift detection, matching the
+contract used by `omiologic/context-governance` and `omiologic/deliver-product`.
+It fetches a pinned ref from the configured remote, installs metadata-free
+package snapshots under `.agents/skills/` (Codex) or `.claude/skills/` (Claude
+Code), and records `.deliver-with-gh-install.json` with the source commit and
+per-package content digests. Rerunning it reports each package as `current`,
+`behind`, `local-modifications`, or an unmanaged `migrate-*` state; upstream or
+unmanaged changes require `--migrate`.
+
+```bash
+python3 scripts/install.py --target /path/to/consumer --agent codex --yes
+```
+
+See [INSTALLATION.md](./INSTALLATION.md) for subset installation, migration
+semantics, installed-skill validation, and the one-way `deliver-product`
+integration contract.

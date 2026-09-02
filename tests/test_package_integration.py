@@ -169,26 +169,43 @@ class PackageIntegrationTests(unittest.TestCase):
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
 
+    def _install(self, *args):
+        return subprocess.run(
+            [
+                sys.executable,
+                str(INSTALLER),
+                "--source",
+                str(ROOT),
+                "--ref",
+                "HEAD",
+                *args,
+            ],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
     def test_installer_supports_one_skill_and_complete_ecosystem(self):
         with tempfile.TemporaryDirectory() as temporary:
             temporary_path = Path(temporary)
-            one_root = temporary_path / "one"
-            one = subprocess.run(
-                [
-                    sys.executable,
-                    str(INSTALLER),
-                    "--destination",
-                    str(one_root),
-                    "--skill",
-                    "gh-work-planning",
-                ],
-                cwd=ROOT,
-                text=True,
-                capture_output=True,
-                check=False,
+
+            one_target = temporary_path / "one"
+            one_target.mkdir()
+            one = self._install(
+                "--target", str(one_target),
+                "--agent", "codex",
+                "--package", "gh-work-planning",
+                "--yes",
             )
             self.assertEqual(one.returncode, 0, one.stderr)
+            one_root = one_target / ".agents/skills"
             self.assertTrue((one_root / "gh-work-planning/SKILL.md").is_file())
+            self.assertTrue((one_root / ".deliver-with-gh-install.json").is_file())
+            manifest = json.loads((one_root / ".deliver-with-gh-install.json").read_text(encoding="utf-8"))
+            self.assertEqual(list(manifest["packages"]), ["gh-work-planning"])
+            self.assertFalse((one_root / "gh-change-delivery").exists())
+
             installed_one = subprocess.run(
                 [
                     sys.executable,
@@ -206,15 +223,21 @@ class PackageIntegrationTests(unittest.TestCase):
             )
             self.assertEqual(installed_one.returncode, 0, installed_one.stderr)
 
-            all_root = temporary_path / "all"
-            all_skills = subprocess.run(
-                [sys.executable, str(INSTALLER), "--destination", str(all_root)],
-                cwd=ROOT,
-                text=True,
-                capture_output=True,
-                check=False,
-            )
+            all_target = temporary_path / "all"
+            all_target.mkdir()
+            all_skills = self._install("--target", str(all_target), "--agent", "codex", "--yes")
             self.assertEqual(all_skills.returncode, 0, all_skills.stderr)
+            all_root = all_target / ".agents/skills"
+            manifest = json.loads((all_root / ".deliver-with-gh-install.json").read_text(encoding="utf-8"))
+            self.assertEqual(
+                sorted(manifest["packages"]),
+                ["deliver-with-gh", "gh-change-delivery", "gh-delivery-reconciliation", "gh-work-planning"],
+            )
+
+            reinstall = self._install("--target", str(all_target), "--agent", "codex", "--yes")
+            self.assertEqual(reinstall.returncode, 0, reinstall.stderr)
+            self.assertIn("current", reinstall.stdout)
+
             installed_all = subprocess.run(
                 [
                     sys.executable,
@@ -230,28 +253,20 @@ class PackageIntegrationTests(unittest.TestCase):
             )
             self.assertEqual(installed_all.returncode, 0, installed_all.stderr)
 
-    def test_installer_refuses_to_replace_existing_skill(self):
+    def test_installer_refuses_to_replace_occupied_destination(self):
         with tempfile.TemporaryDirectory() as temporary:
-            destination = Path(temporary)
-            target = destination / "deliver-with-gh"
-            target.mkdir()
-            marker = target / "user-owned.txt"
+            target = Path(temporary)
+            occupied = target / ".agents/skills/deliver-with-gh"
+            occupied.mkdir(parents=True)
+            marker = occupied / "user-owned.txt"
             marker.write_text("preserve", encoding="utf-8")
-            result = subprocess.run(
-                [
-                    sys.executable,
-                    str(INSTALLER),
-                    "--destination",
-                    str(destination),
-                    "--skill",
-                    "deliver-with-gh",
-                ],
-                cwd=ROOT,
-                text=True,
-                capture_output=True,
-                check=False,
+            result = self._install(
+                "--target", str(target),
+                "--agent", "codex",
+                "--package", "deliver-with-gh",
+                "--yes",
             )
-            self.assertEqual(result.returncode, 2)
+            self.assertEqual(result.returncode, 1)
             self.assertEqual(marker.read_text(encoding="utf-8"), "preserve")
 
 
