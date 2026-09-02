@@ -32,6 +32,11 @@ Branch policy resolution returns an exact branch contract or a blocker. It never
 
 ## Apply the repository workflow
 
+Read [change-delivery workflow](references/change-delivery-workflow.md). Pass
+the exact change envelope, requested effects, effect-specific authority, and
+factual observations to `scripts/resolve_change_delivery.py`. Use only effects
+returned as `apply`; an effect returned as `none` is already satisfied exactly.
+
 Within the resolved scope and granted authority, use the minimum GitHub operations required for the change. Preserve exact traceability between WorkItem/change, branch, commits, and PR.
 
 Treat PR state, review decisions, checks, workflow runs, and merge state as observations/evidence. A merged PR does not itself prove acceptance criteria or canonical WorkItem completion.

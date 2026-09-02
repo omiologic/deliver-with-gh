@@ -1,0 +1,148 @@
+{
+  "base_input": {
+    "repository": "example/widgets",
+    "change_envelope": {
+      "work_item_ref": "plan://launch/work-items/WX-142",
+      "change": {
+        "work_item_id": "WX-142",
+        "type": "feature",
+        "title": "Add organization delete"
+      },
+      "immutable_scope": [
+        {"repository": "example/widgets", "path": "src/organizations/delete.py"},
+        {"repository": "example/widgets", "path": "tests/test_organization_delete.py"}
+      ],
+      "acceptance_criteria": [
+        "An authorized administrator can delete an organization.",
+        "An unauthorized request is rejected."
+      ]
+    },
+    "consumer_policy": {
+      "strategy": "feature",
+      "base_branch": "main",
+      "branch_pattern": "{type}/{work_item_id}-{slug}",
+      "allowed_types": ["feature", "fix"],
+      "requires_pull_request": true,
+      "protected_branches": ["main"]
+    },
+    "requested_effects": [],
+    "authority": {},
+    "observations": {
+      "branch": {
+        "repository": "example/widgets",
+        "name": "feature/WX-142-add-organization-delete",
+        "exists": true,
+        "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "remote_branch": {
+        "repository": "example/widgets",
+        "name": "feature/WX-142-add-organization-delete",
+        "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "commits": [
+        {
+          "repository": "example/widgets",
+          "branch": "feature/WX-142-add-organization-delete",
+          "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "url": "https://github.com/example/widgets/commit/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "work_item_ref": "plan://launch/work-items/WX-142",
+          "idempotency_key": "WX-142-implementation"
+        }
+      ],
+      "pull_request": {
+        "repository": "example/widgets",
+        "number": 87,
+        "url": "https://github.com/example/widgets/pull/87",
+        "head": "feature/WX-142-add-organization-delete",
+        "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "base": "main",
+        "state": "OPEN",
+        "merged": false,
+        "title": "WX-142: Add organization delete",
+        "body": "WorkItem: plan://launch/work-items/WX-142",
+        "work_item_ref": "plan://launch/work-items/WX-142"
+      },
+      "reviews": [],
+      "checks": [
+        {
+          "name": "test",
+          "status": "COMPLETED",
+          "conclusion": "success",
+          "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "url": "https://github.com/example/widgets/actions/runs/100/jobs/200"
+        }
+      ],
+      "workflows": [
+        {
+          "id": 100,
+          "status": "COMPLETED",
+          "conclusion": "success",
+          "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "url": "https://github.com/example/widgets/actions/runs/100"
+        }
+      ]
+    }
+  },
+  "scenarios": [
+    {
+      "name": "valid-feature-branch-pr-handoff",
+      "patch": {},
+      "expect": {"status": "resolved", "phase": "pr_handoff", "blocker_codes": []}
+    },
+    {
+      "name": "failed-check-is-handoff-evidence",
+      "patch": {
+        "observations": {
+          "checks": [
+            {
+              "name": "test",
+              "status": "COMPLETED",
+              "conclusion": "failure",
+              "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "url": "https://github.com/example/widgets/actions/runs/101/jobs/201"
+            }
+          ]
+        }
+      },
+      "expect": {"status": "resolved", "phase": "pr_handoff", "blocker_codes": ["failed_check"]}
+    },
+    {
+      "name": "requested-changes-are-handoff-evidence",
+      "patch": {
+        "observations": {
+          "reviews": [
+            {
+              "id": 301,
+              "decision": "CHANGES_REQUESTED",
+              "url": "https://github.com/example/widgets/pull/87#pullrequestreview-301"
+            }
+          ]
+        }
+      },
+      "expect": {"status": "resolved", "phase": "pr_handoff", "blocker_codes": ["changes_requested"]}
+    },
+    {
+      "name": "stale-pr-head-is-handoff-evidence",
+      "patch": {
+        "observations": {
+          "branch": {
+            "repository": "example/widgets",
+            "name": "feature/WX-142-add-organization-delete",
+            "exists": true,
+            "head_sha": "cccccccccccccccccccccccccccccccccccccccc"
+          }
+        }
+      },
+      "expect": {"status": "resolved", "phase": "pr_handoff", "blocker_codes": ["stale_head"]}
+    },
+    {
+      "name": "protected-work-target-routes-branch-policy-blocker",
+      "patch": {
+        "consumer_policy": {
+          "protected_branches": ["main", "feature/WX-142-add-organization-delete"]
+        }
+      },
+      "expect": {"status": "blocked", "code": "protected_target", "blocker_source": "branch_policy"}
+    }
+  ]
+}

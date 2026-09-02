@@ -77,7 +77,9 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for agent-facing architecture and autho
   canonical references, consumer-owned metadata mappings, and idempotent
   create/update/no-op decisions.
 - `gh-change-delivery` includes the repository branch-policy resolver described
-  above.
+  above and a composed change-delivery resolver for immutable repository scope,
+  effect-specific authority, idempotent branch/commit/PR decisions, and factual
+  review/check/workflow/merge handoff evidence.
 
 Both helpers are read-only contract resolvers. They do not grant or exercise
 GitHub mutation authority and do not decide canonical Delivery state.
