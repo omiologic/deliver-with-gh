@@ -72,6 +72,9 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for agent-facing architecture and autho
 
 ## Deterministic helpers
 
+- `deliver-with-gh` includes a thin lifecycle router that preserves child input,
+  requires exact routing references and owner state, and prioritizes
+  reconciliation of existing GitHub evidence before another change attempt.
 - `gh-work-planning` includes a work-projection resolver for cross-repository
   Projects, repository-explicit Issues, repository-free draft items, exact
   canonical references, consumer-owned metadata mappings, and idempotent

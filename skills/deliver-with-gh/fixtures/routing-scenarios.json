@@ -1,0 +1,141 @@
+[
+  {
+    "name": "bounded-cross-repository-planning-projection",
+    "input": {
+      "delivery_stage": "planning",
+      "github_action": "planning_projection",
+      "owner_state": {"bounded": true, "state_ref": "plan://launch/v3"},
+      "child_input": {
+        "project_ref": {"owner": "example-org", "number": 17, "node_id": "PVT_example17"},
+        "work_items": [
+          {"kind": "issue", "repository": "example-org/api", "title": "API", "canonical_refs": {"plan": "plan://launch/v3", "work_item": "WI-API"}},
+          {"kind": "issue", "repository": "example-org/web", "title": "Web", "canonical_refs": {"plan": "plan://launch/v3", "work_item": "WI-WEB"}},
+          {"kind": "issue", "repository": "partner-org/docs", "title": "Docs", "canonical_refs": {"plan": "plan://launch/v3", "work_item": "WI-DOCS"}},
+          {"kind": "draft", "title": "Coordination", "canonical_refs": {"plan": "plan://launch/v3", "work_item": "WI-COMMS"}}
+        ],
+        "consumer_policy": {"mappings": {}}
+      }
+    },
+    "expect": {"status": "routed", "destination": "gh-work-planning"}
+  },
+  {
+    "name": "ready-authorized-repository-change",
+    "input": {
+      "delivery_stage": "execution",
+      "github_action": "change_delivery",
+      "owner_state": {"ready": true, "state_ref": "execution://WX-142/snapshot-1"},
+      "child_input": {
+        "repository": "example/widgets",
+        "change_envelope": {"work_item_ref": "plan://launch/work-items/WX-142"},
+        "requested_effects": ["branch_create", "push", "pr_create"],
+        "authority": {"branch_create": true, "push": true, "pr_create": true},
+        "consumer_policy": {"branching": {"strategy": "consumer-owned-value", "opaque": true}}
+      }
+    },
+    "expect": {"status": "routed", "destination": "gh-change-delivery"}
+  },
+  {
+    "name": "explicit-github-evidence-reconciliation",
+    "input": {
+      "delivery_stage": "reconciliation",
+      "github_action": "evidence_reconciliation",
+      "child_input": {
+        "work_item_ref": "plan://launch/work-items/WX-142",
+        "criteria": [{"id": "integration", "text": "Integrated", "evidence_kind": "integration"}],
+        "observations": [
+          {
+            "kind": "pull_request",
+            "repository": "example/widgets",
+            "number": 87,
+            "url": "https://github.com/example/widgets/pull/87",
+            "merge_commit_sha": "dddddddddddddddddddddddddddddddddddddddd",
+            "criterion_ids": ["integration"]
+          }
+        ]
+      }
+    },
+    "expect": {"status": "routed", "destination": "gh-delivery-reconciliation"}
+  },
+  {
+    "name": "unreconciled-evidence-precedes-another-change-attempt",
+    "input": {
+      "delivery_stage": "execution",
+      "github_action": "change_delivery",
+      "unreconciled_github_evidence": {
+        "work_item_ref": "plan://launch/work-items/WX-142",
+        "criteria": [{"id": "checks", "text": "Checks pass", "evidence_kind": "behavior"}],
+        "observations": [
+          {
+            "kind": "check",
+            "repository": "example/widgets",
+            "name": "test",
+            "url": "https://github.com/example/widgets/runs/501",
+            "criterion_ids": ["checks"]
+          }
+        ]
+      }
+    },
+    "expect": {
+      "status": "routed",
+      "destination": "gh-delivery-reconciliation",
+      "routing_basis": "unreconciled_github_evidence_precedes_change_delivery"
+    }
+  },
+  {
+    "name": "no-github-specific-action",
+    "input": {"delivery_stage": "execution", "github_action": "none"},
+    "expect": {"status": "returned", "destination": "deliver-product", "reason": "no_github_specific_action"}
+  },
+  {
+    "name": "unresolved-delivery-stage",
+    "input": {"github_action": "planning_projection"},
+    "expect": {"status": "returned", "destination": "deliver-product", "reason": "delivery_stage_unresolved"}
+  },
+  {
+    "name": "change-missing-repository",
+    "input": {
+      "delivery_stage": "execution",
+      "github_action": "change_delivery",
+      "owner_state": {"ready": true, "state_ref": "execution://WX-142/snapshot-1"},
+      "child_input": {
+        "change_envelope": {"work_item_ref": "plan://launch/work-items/WX-142"},
+        "requested_effects": ["branch_create"],
+        "authority": {"branch_create": true},
+        "consumer_policy": {}
+      }
+    },
+    "expect": {"status": "blocked", "code": "missing_repository"}
+  },
+  {
+    "name": "change-missing-owner-readiness",
+    "input": {
+      "delivery_stage": "execution",
+      "github_action": "change_delivery",
+      "owner_state": {"ready": false, "state_ref": "execution://WX-142/draft"},
+      "child_input": {
+        "repository": "example/widgets",
+        "change_envelope": {"work_item_ref": "plan://launch/work-items/WX-142"},
+        "requested_effects": ["branch_create"],
+        "authority": {"branch_create": true},
+        "consumer_policy": {}
+      }
+    },
+    "expect": {"status": "blocked", "code": "missing_ready"}
+  },
+  {
+    "name": "change-missing-effect-authority",
+    "input": {
+      "delivery_stage": "execution",
+      "github_action": "change_delivery",
+      "owner_state": {"ready": true, "state_ref": "execution://WX-142/snapshot-1"},
+      "child_input": {
+        "repository": "example/widgets",
+        "change_envelope": {"work_item_ref": "plan://launch/work-items/WX-142"},
+        "requested_effects": ["branch_create", "push"],
+        "authority": {"branch_create": true},
+        "consumer_policy": {}
+      }
+    },
+    "expect": {"status": "blocked", "code": "missing_authority"}
+  }
+]

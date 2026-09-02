@@ -7,6 +7,13 @@ description: Route GitHub-specific delivery work among work planning, change del
 
 Coordinate one GitHub-specific delivery responsibility without becoming a canonical state owner.
 
+## Load the routing contract
+
+Read [routing contract](references/routing-contract.md). Use
+`scripts/route_delivery.py` when the lane must be selected or validated from a
+Delivery stage, requested GitHub action, owner state, authority, references, or
+unreconciled GitHub evidence.
+
 ## Route
 
 Use explicit user intent, platform-neutral Delivery stage, owner-produced state, repository identity, and available GitHub evidence.
