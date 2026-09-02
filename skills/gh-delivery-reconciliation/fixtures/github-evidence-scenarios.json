@@ -1,0 +1,156 @@
+{
+  "work_item_ref": "plan://launch/work-items/WX-142",
+  "criteria": [
+    {"id": "completion", "text": "The WorkItem is complete.", "evidence_kind": "behavior"},
+    {"id": "source", "text": "The intended source change exists.", "evidence_kind": "source_change"},
+    {"id": "integration", "text": "The change is integrated into main.", "evidence_kind": "integration"},
+    {"id": "review", "text": "The required code review is approved.", "evidence_kind": "review"},
+    {"id": "unit", "text": "Unit behavior passes.", "evidence_kind": "behavior"},
+    {"id": "integration-tests", "text": "Integrated behavior passes.", "evidence_kind": "behavior"},
+    {"id": "skipped-suite", "text": "The compatibility suite passes.", "evidence_kind": "behavior"},
+    {"id": "cancelled-suite", "text": "The deployment suite passes.", "evidence_kind": "behavior"},
+    {"id": "current-head", "text": "Tests cover the expected head.", "evidence_kind": "behavior"},
+    {"id": "docs", "text": "Documentation examples pass.", "evidence_kind": "behavior"},
+    {"id": "artifact", "text": "The verification artifact is available.", "evidence_kind": "artifact"}
+  ],
+  "consumer_policy": {
+    "expected_heads": {
+      "example/widgets": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    "required_evidence": {
+      "integration-tests": [
+        {"kind": "workflow", "name": "integration", "repository": "example/widgets"}
+      ],
+      "docs": [
+        {"kind": "workflow", "name": "docs-e2e", "repository": "example/widgets"}
+      ],
+      "skipped-suite": [
+        {"kind": "workflow", "name": "compatibility", "repository": "example/widgets"}
+      ],
+      "cancelled-suite": [
+        {"kind": "workflow", "name": "deployment", "repository": "example/widgets"}
+      ]
+    }
+  },
+  "observations": [
+    {
+      "kind": "issue",
+      "repository": "example/widgets",
+      "number": 42,
+      "url": "https://github.com/example/widgets/issues/42",
+      "state": "CLOSED",
+      "criterion_ids": ["completion"]
+    },
+    {
+      "kind": "project_item",
+      "project_ref": {"owner": "example", "number": 7, "node_id": "PVT_example7"},
+      "item_id": "PVTI_item42",
+      "url": "https://github.com/orgs/example/projects/7",
+      "repository": "partner/docs",
+      "status": "Done",
+      "criterion_ids": ["completion"]
+    },
+    {
+      "kind": "commit",
+      "repository": "example/widgets",
+      "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "url": "https://github.com/example/widgets/commit/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "criterion_ids": ["source"]
+    },
+    {
+      "kind": "pull_request",
+      "repository": "example/widgets",
+      "number": 87,
+      "url": "https://github.com/example/widgets/pull/87",
+      "merged": true,
+      "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "merge_commit_sha": "dddddddddddddddddddddddddddddddddddddddd",
+      "criterion_ids": ["integration", "completion"]
+    },
+    {
+      "kind": "review",
+      "repository": "example/widgets",
+      "pull_request_number": 87,
+      "id": 301,
+      "url": "https://github.com/example/widgets/pull/87#pullrequestreview-301",
+      "reviewer": "octocat",
+      "decision": "APPROVED",
+      "criterion_ids": ["review", "completion"]
+    },
+    {
+      "kind": "check",
+      "repository": "example/widgets",
+      "id": 501,
+      "name": "unit",
+      "url": "https://github.com/example/widgets/runs/501",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "criterion_ids": ["unit"]
+    },
+    {
+      "kind": "workflow",
+      "repository": "example/widgets",
+      "name": "integration",
+      "run_id": 601,
+      "url": "https://github.com/example/widgets/actions/runs/601",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "criterion_ids": ["integration-tests"],
+      "jobs": [
+        {
+          "name": "integration-postgres",
+          "id": 701,
+          "url": "https://github.com/example/widgets/actions/runs/601/job/701",
+          "status": "completed",
+          "conclusion": "failure",
+          "criterion_ids": ["integration-tests"]
+        }
+      ],
+      "artifacts": [
+        {
+          "name": "integration-log",
+          "id": 801,
+          "url": "https://github.com/example/widgets/actions/runs/601/artifacts/801",
+          "status": "available",
+          "result": "success",
+          "criterion_ids": ["artifact"]
+        }
+      ]
+    },
+    {
+      "kind": "workflow",
+      "repository": "example/widgets",
+      "name": "compatibility",
+      "run_id": 602,
+      "url": "https://github.com/example/widgets/actions/runs/602",
+      "status": "completed",
+      "conclusion": "skipped",
+      "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "criterion_ids": ["skipped-suite"]
+    },
+    {
+      "kind": "workflow",
+      "repository": "example/widgets",
+      "name": "deployment",
+      "run_id": 603,
+      "url": "https://github.com/example/widgets/actions/runs/603",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "criterion_ids": ["cancelled-suite"]
+    },
+    {
+      "kind": "check",
+      "repository": "example/widgets",
+      "id": 504,
+      "name": "current-head",
+      "url": "https://github.com/example/widgets/runs/504",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "criterion_ids": ["current-head"]
+    }
+  ]
+}

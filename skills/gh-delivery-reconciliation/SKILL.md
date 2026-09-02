@@ -13,6 +13,11 @@ Use exact repository, Issue, Project item, PR, commit, review, check, workflow-r
 
 ## Normalize evidence
 
+Read [evidence normalization contract](references/evidence-normalization-contract.md).
+Pass exact criteria, GitHub observations, and consumer-required evidence to
+`scripts/normalize_github_evidence.py`. Preserve its criterion coverage and
+provenance boundaries when handing the result to platform-neutral reconciliation.
+
 For each applicable acceptance criterion, report supporting, contradicting, or missing GitHub evidence.
 
 Examples:
