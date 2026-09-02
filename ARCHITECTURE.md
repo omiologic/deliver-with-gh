@@ -204,23 +204,46 @@ Never infer:
 
 ```text
 deliver-with-gh/
+├── package-contract.json
+├── scripts/
+│   ├── install.py
+│   └── validate.py
+├── tests/
 ├── README.md
+├── INSTALLATION.md
 ├── ARCHITECTURE.md
 ├── AGENTS.md
 └── skills/
     ├── deliver-with-gh/
-    │   └── SKILL.md
+    │   ├── SKILL.md
+    │   ├── fixtures/
+    │   ├── references/
+    │   └── scripts/
     ├── gh-work-planning/
-    │   └── SKILL.md
+    │   ├── SKILL.md
+    │   ├── fixtures/
+    │   ├── references/
+    │   └── scripts/
     ├── gh-change-delivery/
     │   ├── SKILL.md
-    │   └── references/
-    │       └── branching-strategies.md
+    │   ├── fixtures/
+    │   ├── references/
+    │   └── scripts/
     └── gh-delivery-reconciliation/
-        └── SKILL.md
+        ├── SKILL.md
+        ├── fixtures/
+        ├── references/
+        └── scripts/
 ```
 
 Future scripts, fixtures, tests, and adapters should remain package-local where possible and should not make consumer-specific layouts universal.
+
+`package-contract.json` is the machine-readable validation projection of the
+ownership and dependency invariants in this document. It does not replace this
+architecture or create runtime state. `scripts/validate.py` checks that
+projection, all four independently discoverable skills, public-safe fixtures,
+and the scenario suite without requiring `deliver-product` to import or depend
+on this repository.
 
 ## Initial non-goals
 

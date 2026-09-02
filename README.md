@@ -90,3 +90,11 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for agent-facing architecture and autho
 
 Both helpers are read-only contract resolvers. They do not grant or exercise
 GitHub mutation authority and do not decide canonical Delivery state.
+
+## Validate and install
+
+Run `python3 scripts/validate.py` to validate all four packages, architecture
+invariants, public fixtures, and scenarios. See
+[INSTALLATION.md](./INSTALLATION.md) for independent/full installation,
+installed-skill validation, and the one-way `deliver-product` integration
+contract.

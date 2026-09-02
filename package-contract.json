@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "package": "deliver-with-gh",
+  "dependency_direction": "deliver-with-gh -> deliver-product",
+  "canonical_state_owner": "consumer runtime or responsible owner",
+  "github_state_role": "projection_or_evidence",
+  "project_repository_identity": "independent",
+  "branch_policy_owner": "consumer",
+  "router": "deliver-with-gh",
+  "router_children": [
+    "gh-work-planning",
+    "gh-change-delivery",
+    "gh-delivery-reconciliation"
+  ],
+  "skills": [
+    "deliver-with-gh",
+    "gh-work-planning",
+    "gh-change-delivery",
+    "gh-delivery-reconciliation"
+  ],
+  "public_fixture_namespaces": [
+    "example",
+    "example-org",
+    "partner",
+    "partner-org"
+  ]
+}

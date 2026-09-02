@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "platform_contract": {
+    "owner": "deliver-product",
+    "modified_by_integration": false,
+    "canonical_state_owner": "consumer runtime or responsible owner"
+  },
+  "flows": [
+    {
+      "name": "planning-to-github-work-projection",
+      "delivery_stage": "planning",
+      "github_action": "planning_projection",
+      "owner_state": {"bounded": true, "state_ref": "plan://launch/v3"},
+      "child_fixture": "skills/gh-work-planning/fixtures/work-projection-scenarios.json",
+      "fixture_selector": 0,
+      "consumer_policy_mode": "absent-safe",
+      "expected_destination": "gh-work-planning"
+    },
+    {
+      "name": "execution-to-github-change-workflow",
+      "delivery_stage": "execution",
+      "github_action": "change_delivery",
+      "owner_state": {"ready": true, "state_ref": "execution://WX-142/snapshot-1"},
+      "child_fixture": "skills/gh-change-delivery/fixtures/change-delivery-scenarios.json",
+      "fixture_selector": "base_input",
+      "consumer_policy_mode": "required-consumer-owned",
+      "expected_destination": "gh-change-delivery"
+    },
+    {
+      "name": "github-evidence-to-delivery-reconciliation",
+      "delivery_stage": "reconciliation",
+      "github_action": "evidence_reconciliation",
+      "owner_state": null,
+      "child_fixture": "skills/gh-delivery-reconciliation/fixtures/github-evidence-scenarios.json",
+      "fixture_selector": null,
+      "consumer_policy_mode": "absent-safe",
+      "expected_destination": "gh-delivery-reconciliation"
+    }
+  ]
+}
